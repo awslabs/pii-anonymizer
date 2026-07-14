@@ -1,0 +1,35 @@
+# Lambda Layer Requirements - Optimized for size
+# Core dependencies for PII Anonymizer Lambda function
+# Note: boto3 is provided by Lambda runtime, not included here
+
+
+# Observability
+# X-Ray app-level tracing: patch_all() wraps botocore so AWS SDK calls
+# (Bedrock/S3/DDB/Textract/Transcribe/Polly) become trace subsegments.
+# NOTE: this pulls botocore as a dep, but botocore/boto3/s3transfer are provided
+# by the Lambda runtime — create_layer.sh strips them so the layer stays lean.
+aws-xray-sdk>=2.14.0
+
+# Security
+defusedxml>=0.7.1       # Safe XML parsing (XXE protection)
+
+# Synthetic Data Generation
+faker>=18.0.0           # Generate synthetic PII
+
+# Text Processing
+fuzzywuzzy>=0.18.0      # Fuzzy string matching
+openpyxl>=3.0.10        # Excel spreadsheet manipulation
+Pillow==12.1.1          # Image processing (PIL/Pillow) - CVE-2026-25990 fix
+# PDF Processing
+pypdfium2>=4.30.0       # PDF rendering (PDFium engine; Apache-2.0/BSD) - page rasterization
+pypdf>=5.1.0           # PDF text extraction, validation, and assembly
+
+# Word/Excel Processing
+python-docx>=0.8.11     # Word document manipulation
+python-Levenshtein>=0.20.0  # Fast string similarity
+
+# Configuration
+PyYAML>=6.0             # YAML config parsing
+
+# Utilities
+termcolor>=2.0.0        # Colored output (for logging)

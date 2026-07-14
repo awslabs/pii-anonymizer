@@ -1,0 +1,120 @@
+{
+  "claim_id": "CLM-2024-0098765",
+  "submission_date": "2024-03-15",
+  "status": "under_review",
+  "patient": {
+    "legal_name": "Sarah Elizabeth Johnson",
+    "preferred_name": "Sarah",
+    "date_of_birth": "07/22/1990",
+    "ssn": "987-65-4321",
+    "gender": "Female",
+    "contact": {
+      "home_phone": "(512) 867-5309",
+      "mobile_phone": "(512) 867-5310",
+      "email": "sarah.e.johnson@gmail.com",
+      "alt_email": "s.johnson@austinisd.org"
+    },
+    "address": {
+      "street": "4521 Oak Street",
+      "city": "Austin",
+      "state": "TX",
+      "zip": "78701-3214"
+    },
+    "medical_record_number": "RGH-2024-039812",
+    "account_number": "ACCT-00789456",
+    "drivers_license": "TX-DL-7823041-C"
+  },
+  "insurance": {
+    "primary": {
+      "payer": "Blue Cross Blue Shield of Texas",
+      "plan_type": "PPO Gold",
+      "member_id": "YMT987654321",
+      "group_number": "GRP-TX-88120",
+      "subscriber": {
+        "name": "Sarah Elizabeth Johnson",
+        "dob": "07/22/1990",
+        "ssn": "987-65-4321",
+        "relationship": "Self"
+      },
+      "rx": {
+        "bin": "610415",
+        "pcn": "BCBSTX",
+        "group": "RXGRP55210"
+      }
+    },
+    "secondary": {
+      "payer": "Aetna Health Inc",
+      "member_id": "W123456789",
+      "subscriber": {
+        "name": "Robert T. Johnson III",
+        "dob": "08/12/1950",
+        "ssn": "234-56-7890",
+        "relationship": "Spouse"
+      }
+    }
+  },
+  "providers": {
+    "billing": {
+      "name": "Riverside General Hospital",
+      "npi": "1234567890",
+      "tax_id": "74-3219876",
+      "address": "2400 Medical Center Drive, Austin, TX 78701",
+      "phone": "(512) 300-1000",
+      "fax": "(512) 300-1001",
+      "email": "billing@riversidegeneral.org"
+    },
+    "rendering": {
+      "name": "Dr. Michael Chen, MD",
+      "npi": "1234567893",
+      "dea": "FC1234567",
+      "state_license": "TX-MD-88234"
+    },
+    "referring": {
+      "name": "Dr. Emily Torres, MD",
+      "npi": "8899001122"
+    }
+  },
+  "diagnosis": [
+    { "code": "G35", "description": "Multiple sclerosis" },
+    { "code": "G25.81", "description": "Restless legs syndrome" }
+  ],
+  "services": [
+    {
+      "date": "03/15/2024",
+      "cpt": "99214",
+      "description": "Office visit - established patient",
+      "billed_amount": 285.0,
+      "notes": "Patient Sarah Johnson presented with worsening numbness in left hand. Referred by Dr. Torres."
+    },
+    {
+      "date": "03/15/2024",
+      "cpt": "95913",
+      "description": "Nerve conduction study",
+      "billed_amount": 450.0,
+      "notes": "NCS performed on left upper extremity. Results sent to Dr. Chen at michael.chen@riversidegeneral.org"
+    }
+  ],
+  "guarantor": {
+    "name": "Sarah Elizabeth Johnson",
+    "dob": "07/22/1990",
+    "ssn": "987-65-4321",
+    "address": "4521 Oak Street, Austin TX 78701",
+    "phone": "(512) 867-5309",
+    "email": "sarah.e.johnson@gmail.com",
+    "relationship": "Self"
+  },
+  "emergency_contact": {
+    "name": "Robert T. Johnson III",
+    "phone": "(713) 555-0383",
+    "relationship": "Father"
+  },
+  "attorney": {
+    "name": "Jennifer Walsh, Esq.",
+    "firm": "Walsh & Associates",
+    "address": "100 Congress Ave Suite 1200, Austin TX 78701",
+    "phone": "(512) 555-0199",
+    "email": "jwalsh@walshlaw.com",
+    "bar_number": "TX-BAR-24098765"
+  },
+  "notes": "Patient SSN 987-65-4321 verified against BCBS records. Prior authorization PA-2024-00345 approved by Dr. Torres (NPI: 8899001122). Patient resides at 4521 Oak Street with father Robert Johnson. Contact sarah.e.johnson@gmail.com for follow-up scheduling."
+}

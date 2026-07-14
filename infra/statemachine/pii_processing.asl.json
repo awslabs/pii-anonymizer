@@ -1,0 +1,199 @@
+{
+  "Comment": "PII Anonymizer - Detect → (Synthetic if needed) → Redact",
+  "StartAt": "DetectPII",
+  "States": {
+    "DetectPII": {
+      "Type": "Map",
+      "ItemsPath": "$.files",
+      "ItemSelector": {
+        "job_id.$": "$.job_id",
+        "output_prefix.$": "$.output_prefix",
+        "timestamp.$": "$.timestamp",
+        "execution_id.$": "$$.Execution.Name",
+        "source_bucket.$": "$$.Map.Item.Value.source_bucket",
+        "source_key.$": "$$.Map.Item.Value.source_key",
+        "output_bucket.$": "$$.Map.Item.Value.output_bucket"
+      },
+      "MaxConcurrency": 2,
+      "ToleratedFailurePercentage": 50,
+      "ItemProcessor": {
+        "ProcessorConfig": { "Mode": "INLINE" },
+        "StartAt": "DetectStep",
+        "States": {
+          "DetectStep": {
+            "Type": "Task",
+            "Resource": "${PIIDetectionFunctionArn}",
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Sandbox.Timedout",
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException",
+                  "ServiceQuotaExceededException",
+                  "ThrottlingException",
+                  "ProvisionedThroughputExceededException",
+                  "RequestLimitExceeded",
+                  "ServiceUnavailableException"
+                ],
+                "IntervalSeconds": 10,
+                "MaxAttempts": 5,
+                "BackoffRate": 2.5
+              }
+            ],
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.detection_results",
+      "Next": "DropFiles"
+    },
+    "DropFiles": {
+      "Type": "Pass",
+      "Comment": "Drop $.files — no longer needed after detection, saves ~127KB at 540 files",
+      "Parameters": {
+        "job_id.$": "$.job_id",
+        "output_prefix.$": "$.output_prefix",
+        "timestamp.$": "$.timestamp",
+        "source_bucket.$": "$.source_bucket",
+        "output_bucket.$": "$.output_bucket",
+        "redaction_mode.$": "$.redaction_mode",
+        "detection_results.$": "$.detection_results"
+      },
+      "Next": "CheckRedactionMode"
+    },
+    "CheckRedactionMode": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.redaction_mode",
+          "StringEquals": "blackout",
+          "Next": "SetEmptyMapping"
+        }
+      ],
+      "Default": "GenerateSynthetic"
+    },
+    "SetEmptyMapping": {
+      "Type": "Pass",
+      "Result": { "mapping_s3_key": "" },
+      "ResultPath": "$.synthetic_result",
+      "Next": "RedactPII"
+    },
+    "GenerateSynthetic": {
+      "Type": "Task",
+      "Resource": "${SyntheticFunctionArn}",
+      "Parameters": {
+        "job_id.$": "$.job_id",
+        "output_prefix.$": "$.output_prefix",
+        "timestamp.$": "$.timestamp",
+        "source_bucket.$": "$.source_bucket",
+        "output_bucket.$": "$.output_bucket",
+        "detection_results.$": "$.detection_results"
+      },
+      "ResultPath": "$.synthetic_result",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Sandbox.Timedout",
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException",
+            "ServiceQuotaExceededException",
+            "ThrottlingException",
+            "ProvisionedThroughputExceededException",
+            "RequestLimitExceeded",
+            "ServiceUnavailableException"
+          ],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.5
+        }
+      ],
+      "Next": "RedactPII"
+    },
+    "RedactPII": {
+      "Type": "Map",
+      "ItemsPath": "$.detection_results",
+      "ItemSelector": {
+        "job_id.$": "$.job_id",
+        "output_prefix.$": "$.output_prefix",
+        "timestamp.$": "$.timestamp",
+        "source_bucket.$": "$.source_bucket",
+        "source_key.$": "$$.Map.Item.Value.source_key",
+        "output_bucket.$": "$.output_bucket",
+        "detection_s3_key.$": "$$.Map.Item.Value.detection_s3_key",
+        "mapping_s3_key.$": "$.synthetic_result.mapping_s3_key",
+        "redaction_mode.$": "$.redaction_mode"
+      },
+      "MaxConcurrency": 2,
+      "ToleratedFailurePercentage": 50,
+      "ItemProcessor": {
+        "ProcessorConfig": { "Mode": "INLINE" },
+        "StartAt": "RedactStep",
+        "States": {
+          "RedactStep": {
+            "Type": "Task",
+            "Resource": "${RedactFunctionArn}",
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Sandbox.Timedout",
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException",
+                  "ServiceQuotaExceededException",
+                  "ThrottlingException",
+                  "ProvisionedThroughputExceededException",
+                  "RequestLimitExceeded",
+                  "ServiceUnavailableException"
+                ],
+                "IntervalSeconds": 10,
+                "MaxAttempts": 5,
+                "BackoffRate": 2.5
+              }
+            ],
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.redaction_results",
+      "Next": "PrepareComplete"
+    },
+    "PrepareComplete": {
+      "Type": "Pass",
+      "Comment": "Keep only fields needed by WorkflowComplete — drops detection_results and synthetic_result",
+      "Parameters": {
+        "job_id.$": "$.job_id",
+        "timestamp.$": "$.timestamp",
+        "redaction_results.$": "$.redaction_results"
+      },
+      "Next": "WorkflowComplete"
+    },
+    "WorkflowComplete": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "${DynamoDBTableName}",
+        "Key": {
+          "filename": { "S.$": "$.job_id" },
+          "timestamp": { "S.$": "$.timestamp" }
+        },
+        "UpdateExpression": "SET #s = :s, redaction_results = :r, updated_at = :u",
+        "ExpressionAttributeNames": { "#s": "status" },
+        "ExpressionAttributeValues": {
+          ":s": { "S": "COMPLETE" },
+          ":r": { "S.$": "States.JsonToString($.redaction_results)" },
+          ":u": { "S.$": "$$.State.EnteredTime" }
+        }
+      },
+      "ResultPath": "$.ddb_result",
+      "Next": "Done"
+    },
+    "Done": {
+      "Type": "Succeed"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+[
+  { "_comment": "=== REQUIRED ===" },
+  { "ParameterKey": "Region", "ParameterValue": "us-east-2" },
+  {
+    "ParameterKey": "ArtifactBucket",
+    "ParameterValue": "your-artifact-bucket-name"
+  },
+  { "ParameterKey": "FunctionName", "ParameterValue": "PII-Anonymizer" },
+  {
+    "ParameterKey": "S3InputBucketName",
+    "ParameterValue": "your-input-bucket-name"
+  },
+  {
+    "ParameterKey": "S3OutputBucketName",
+    "ParameterValue": "your-output-bucket-name"
+  },
+  { "ParameterKey": "ProcessingMode", "ParameterValue": "realtime" },
+
+  { "_comment": "=== PROCESSING ===" },
+  { "ParameterKey": "MemorySize", "ParameterValue": "2048" },
+  { "ParameterKey": "Timeout", "ParameterValue": "600" },
+  { "ParameterKey": "ReservedConcurrency", "ParameterValue": "25" },
+  { "ParameterKey": "MaxConcurrentWorkflows", "ParameterValue": "25" },
+  { "ParameterKey": "SQSVisibilityTimeout", "ParameterValue": "90" },
+  { "ParameterKey": "LogLevel", "ParameterValue": "INFO" },
+  { "ParameterKey": "LogRetentionDays", "ParameterValue": "30" },
+
+  { "_comment": "=== BATCH MODE ONLY (ignored in realtime) ===" },
+  { "ParameterKey": "S3FilterPrefix", "ParameterValue": "" },
+  { "ParameterKey": "BatchTriggerSchedule", "ParameterValue": "5" },
+  { "ParameterKey": "JobFolderDepth", "ParameterValue": "1" },
+  { "ParameterKey": "FolderWaitSeconds", "ParameterValue": "30" },
+
+  { "_comment": "=== KMS KEYS (leave empty for AWS-managed encryption) ===" },
+  { "ParameterKey": "ArtifactBucketKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "S3InputKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "S3OutputKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "DynamoDBKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "CloudWatchKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "SQSKmsKeyArn", "ParameterValue": "" },
+  { "ParameterKey": "IdempotencyTableKmsKeyArn", "ParameterValue": "" },
+
+  { "_comment": "=== EXISTING RESOURCES (leave empty to create new) ===" },
+  { "ParameterKey": "DynamoDBTableName", "ParameterValue": "" },
+  { "ParameterKey": "ExistingDynamoDBTableArn", "ParameterValue": "" },
+  { "ParameterKey": "ExistingDynamoDBTableName", "ParameterValue": "" },
+  { "ParameterKey": "ExistingIdempotencyTableArn", "ParameterValue": "" },
+  { "ParameterKey": "ExistingIdempotencyTableName", "ParameterValue": "" },
+
+  { "_comment": "=== SECURITY (leave empty if not required) ===" },
+  { "ParameterKey": "PermissionsBoundaryArn", "ParameterValue": "" },
+  { "ParameterKey": "VpcSubnetIds", "ParameterValue": "" },
+  { "ParameterKey": "VpcSecurityGroupIds", "ParameterValue": "" },
+
+  { "_comment": "=== TAGS ===" },
+  { "ParameterKey": "Environment", "ParameterValue": "DEV" },
+  { "ParameterKey": "Project", "ParameterValue": "PII-Anonymizer" }
+]

@@ -1,0 +1,672 @@
+================================================================================
+  RIVERSIDE GENERAL HOSPITAL & MEDICAL GROUP
+  Department of Neurology & Internal Medicine
+  2400 Medical Center Drive, Austin, TX 78701
+  Main: (512) 300-1000  |  Fax: (512) 300-1001  |  admissions@riversidegeneral.org
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 1 — PATIENT INTAKE & REGISTRATION FORM
+Completed by: Admissions Clerk — Janet Flores
+Date of Registration: March 15, 2024
+────────────────────────────────────────────────────────────────────────────────
+
+PATIENT INFORMATION
+-------------------
+Full Legal Name         : Sarah Elizabeth Johnson
+Preferred Name          : Sarah
+Date of Birth           : July 22, 1990
+Age                     : 33
+Sex at Birth            : Female
+Gender Identity         : Female (she/her)
+Social Security Number  : 987-65-4321
+Marital Status          : Married
+
+CONTACT INFORMATION
+-------------------
+Home Address            : 4521 Oak Street, Austin, TX 78701
+Mailing Address         : Same as above
+Home Phone              : (512) 867-5309
+Mobile Phone            : (512) 867-5310
+Work Phone              : (512) 440-0220 ext. 114
+Email Address           : sarah.e.johnson@gmail.com
+Alternate Email         : s.johnson@austinisd.org
+Preferred Contact Method: Mobile phone after 5:00 PM
+
+IDENTIFICATION & INSURANCE
+---------------------------
+Photo ID Type           : Texas Driver's License
+Photo ID Number         : TX-DL-7823041-C  (Expires: 09/2026)
+Insurance Provider      : Blue Cross Blue Shield of Texas
+Insurance Plan          : PPO Gold — Group Plan
+Member ID               : BCB-TX-00234567
+Group Number            : GRP-TX-88120
+Policy Holder           : Sarah Elizabeth Johnson (self)
+Policy Holder SSN       : 987-65-4321
+Secondary Insurance     : None
+
+EMERGENCY CONTACTS
+------------------
+Primary Emergency Contact   : David Allen Johnson (Husband)
+Relationship                : Spouse
+Phone (Mobile)              : (512) 867-0092
+Phone (Home)                : (512) 867-0093
+Email                       : david.johnson84@gmail.com
+
+Secondary Emergency Contact : Carol Anne Nguyen (Mother)
+Relationship                : Parent
+Phone                       : (512) 334-8821
+Address                     : 88 Ridgewood Ln, Round Rock, TX 78664
+
+REFERRING PHYSICIAN
+-------------------
+Name                    : Dr. Patricia Lee, MD
+NPI                     : 1902837465
+Practice                : Austin Family Health Associates
+Address                 : 711 W 38th St, Suite 200, Austin, TX 78705
+Phone                   : (512) 458-3900
+Fax                     : (512) 458-3901
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 2 — CLINICAL INTAKE NOTES
+Attending Physician: Dr. Michael Chen, MD — Neurology
+NPI: 1234567890
+Date: March 15, 2024  |  Time: 10:35 AM
+────────────────────────────────────────────────────────────────────────────────
+
+Chief Complaint:
+Patient Sarah Johnson, a 33-year-old female, presents today with a 3-week history
+of progressive bilateral lower extremity weakness, intermittent blurred vision in
+the right eye, and episodes of severe fatigue. She was referred by her PCP,
+Dr. Patricia Lee at (512) 458-3900.
+
+History of Present Illness:
+Ms. Johnson first noticed symptoms approximately three weeks ago when she began
+having difficulty climbing the stairs at her home at 4521 Oak Street. She reports
+that on February 22, 2024, she experienced a sudden episode of visual disturbance
+lasting approximately 45 minutes. She contacted our after-hours line at
+(512) 300-1002 and was advised to present to the ED.
+
+She is a nonsmoker, denies recreational drug use, and drinks alcohol socially
+(approximately 2–3 glasses of wine per week). She works as a 4th grade teacher
+at Barton Hills Elementary, 4000 Barton Creek Blvd, Austin, TX 78735.
+
+Past Medical History:
+  - Hypothyroidism (diagnosed 2018, managed with Levothyroxine 75 mcg daily)
+  - Seasonal allergic rhinitis
+  - No prior hospitalizations
+
+Family History:
+  - Mother (Carol Anne Nguyen, DOB: 09/14/1962): Type 2 Diabetes, Hypertension
+  - Father (Robert Nguyen, deceased): Cardiovascular disease
+  - Maternal aunt: Rheumatoid arthritis
+
+Medications:
+  1. Levothyroxine 75 mcg — 1 tablet orally every morning
+  2. Cetirizine 10 mg — PRN seasonal allergies
+  3. Oral contraceptive pill (Sprintec) — daily
+
+Allergies:
+  - Penicillin: severe rash and urticaria (documented 2009)
+  - Codeine: nausea and vomiting
+
+Vital Signs (10:42 AM):
+  Blood Pressure    : 118/76 mmHg
+  Heart Rate        : 72 bpm
+  Temperature       : 98.4°F (36.9°C)
+  Respiratory Rate  : 16 breaths/min
+  SpO2              : 99% on room air
+  Weight            : 138 lbs (62.6 kg)
+  Height            : 5'6" (167.6 cm)
+  BMI               : 22.3
+
+Assessment & Plan:
+Clinical presentation is highly suspicious for relapsing-remitting Multiple
+Sclerosis (ICD-10: G35). Ordering MRI Brain and Spine with and without contrast,
+lumbar puncture for CSF analysis, and ophthalmology referral for optic neuritis
+workup. Patient was counselled extensively; she asked that all correspondence be
+directed to her personal email sarah.e.johnson@gmail.com rather than her work
+address, and that messages not be left with her employer.
+
+Lab Orders: CBC, CMP, TSH, Vitamin B12, ANA panel, VEPs
+Imaging: MRI Brain/Spine — urgent, ordered under patient DOB 07/22/1990
+
+Signed: Dr. Michael Chen, MD — Neurology — License TX-MD-00129834
+        michael.chen@riversidegeneral.org  |  Pager: (512) 300-1099
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 3 — INTERNAL EMAIL CORRESPONDENCE
+────────────────────────────────────────────────────────────────────────────────
+
+From    : michael.chen@riversidegeneral.org
+To      : radiology@riversidegeneral.org
+CC      : patricia.lee@austinfamilyhealth.com
+Subject : Urgent MRI Request — Johnson, Sarah E. — DOB 07/22/1990
+Date    : March 15, 2024  11:04 AM
+
+Team,
+
+Please prioritize MRI Brain and Spine with and without contrast for the following
+patient. Suspicion for first MS episode — we need images within 48 hours.
+
+  Patient Name  : Sarah Elizabeth Johnson
+  DOB           : 07/22/1990
+  MRN           : RGH-2024-039812
+  SSN (last 4)  : ***-**-4321
+  Insurance ID  : BCB-TX-00234567
+  Ordering MD   : Dr. Michael Chen, NPI 1234567890
+  Callback      : (512) 300-1099 (pager) or michael.chen@riversidegeneral.org
+
+Please fax results to Dr. Lee at (512) 458-3901 and upload to the patient portal.
+
+Thank you,
+Dr. Michael Chen
+
+
+---
+
+From    : billing@riversidegeneral.org
+To      : sarah.e.johnson@gmail.com
+Subject : Your Riverside General Hospital Account — Statement #RGH-INV-2024-08821
+Date    : March 18, 2024  08:30 AM
+
+Dear Ms. Johnson,
+
+Please find below your account summary for services rendered on March 15, 2024.
+
+  Account Holder  : Sarah Elizabeth Johnson
+  Account Number  : RGH-ACCT-039812
+  Date of Service : March 15, 2024
+  Provider        : Dr. Michael Chen, MD
+
+  Services Billed:
+    Office Visit — New Patient, Level 4          $450.00
+    MRI Brain w/wo contrast                      $1,850.00
+    MRI Spine w/wo contrast                      $2,100.00
+    Lab Panel (CBC, CMP, TSH, ANA)               $320.00
+                                          ─────────────────
+    Subtotal                                     $4,720.00
+    Insurance Adjustment (BCBS PPO Gold)        -$3,288.00
+    Patient Responsibility                       $1,432.00
+
+  Payment Methods Accepted:
+    — Online: https://portal.riversidegeneral.org/pay
+    — Phone: (512) 300-1003  (press 3 for billing)
+    — Mail check payable to Riverside General Hospital,
+      2400 Medical Center Drive, Austin, TX 78701
+
+  Credit card on file ending in ****4821 will be charged on April 4, 2024
+  unless you call (512) 300-1003 before that date.
+
+Questions? Contact billing@riversidegeneral.org or call (512) 300-1003.
+
+Riverside General Hospital | Tax ID: 74-3829156
+
+
+---
+
+From    : sarah.e.johnson@gmail.com
+To      : michael.chen@riversidegeneral.org
+Subject : RE: Follow-up questions after my appointment
+Date    : March 19, 2024  7:14 PM
+
+Dr. Chen,
+
+Thank you for seeing me on the 15th. I've been anxious waiting for results.
+A quick note — my husband David can be reached at (512) 867-0092 or
+david.johnson84@gmail.com if you ever need to reach someone when I'm unavailable.
+
+Also, my mother Carol Nguyen mentioned she might call your office on my behalf.
+Her number is (512) 334-8821. She lives at 88 Ridgewood Ln, Round Rock, TX 78664.
+Please only share information with her if I've submitted a signed HIPAA release —
+I'll drop that off tomorrow.
+
+One more thing — I used to go by my maiden name Sarah Elizabeth Nguyen before I
+married David in 2018. I mention this only because some old lab results from
+Austin Regional Clinic might be filed under that name. My SSN has always been
+987-65-4321 so records should be linkable.
+
+Thank you again,
+Sarah Johnson
+(512) 867-5310
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 4 — SPECIALTY REFERRAL NOTE
+Riverside General Hospital — Ophthalmology
+Dr. Sandra Park, MD  |  NPI: 5647382910
+Referral Date: March 15, 2024
+────────────────────────────────────────────────────────────────────────────────
+
+REFERRAL FOR: Optic Neuritis Evaluation
+
+Patient: Sarah Elizabeth Johnson
+DOB: 1990-07-22
+MRN: RGH-2024-039812
+Phone: 5128675309
+Insurance: BCB-TX-00234567
+
+Reason for Referral:
+Ms. Johnson is a 33F presenting with acute onset monocular visual blurring OD
+beginning approximately February 22, 2024. Given the overall clinical picture
+with concurrent limb weakness and fatigue in a young woman, Dr. Chen is concerned
+for demyelinating optic neuritis as part of a first MS episode.
+
+Please schedule urgently. Patient has confirmed she is available Monday through
+Friday after 3:30 PM (she teaches until then). Contact her at 5128675310 (mobile)
+or sarah.e.johnson@gmail.com. Do not call her school — Barton Hills Elementary,
+(512) 414-8888 — as she has asked us not to contact her employer.
+
+Copy of referral faxed to Dr. Patricia Lee at 5124583901.
+
+Signed: Dr. Michael Chen, MD
+        Riverside General Hospital Neurology
+        michael.chen@riversidegeneral.org
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 5 — NURSING PROGRESS NOTES
+────────────────────────────────────────────────────────────────────────────────
+
+March 20, 2024 — 09:15
+Nurse: R. Alvarez, RN
+
+Patient Sarah Johnson (DOB 07/22/1990, MRN RGH-2024-039812) called the nurse
+line at 09:08 from her mobile number (512) 867-5310. She reports worsening right
+leg weakness since yesterday evening. I advised her to come in immediately.
+She confirmed her address is still 4521 Oak Street, Austin TX 78701 and that she
+would drive herself. Notified Dr. Chen via pager (512) 300-1099.
+
+March 20, 2024 — 11:30
+Nurse: R. Alvarez, RN
+
+Patient arrived at 10:52 AM accompanied by her husband David Johnson,
+(512) 867-0092. Vitals taken. BP 122/80, HR 78, Temp 98.6°F, O2 99%.
+Dr. Chen reviewed and ordered IV Methylprednisolone 1g daily x 3 days.
+Patient expressing significant anxiety. Social work consult placed.
+Patient verbally consented to treatment. Consent form signed and scanned.
+
+March 21, 2024 — 08:00
+Nurse: T. Okafor, RN
+
+MRI results reviewed by Dr. Chen with patient and husband present. Findings
+consistent with multiple sclerosis — 4 periventricular lesions noted, one with
+gadolinium enhancement. Diagnosis confirmed: G35 — Multiple Sclerosis. Patient
+was visibly distressed. Her husband David (DOB: 08/17/1984, SSN 876-54-3210)
+asked to be included in all future care discussions. Patient agreed and updated
+her HIPAA authorization form to include David Allen Johnson as an authorized
+representative. His email david.johnson84@gmail.com added to patient portal.
+
+March 22, 2024 — 14:00
+Nurse: T. Okafor, RN
+
+Social worker Jane Kim, LCSW (ext. 441) met with patient. Discussed MS Society
+resources, disability accommodation planning for her teaching role, and mental
+health support. Patient provided employer HR contact: hr@austinisd.org,
+(512) 414-1000 ext. 200. She asked that the hospital NOT contact her employer
+directly; she will handle any FMLA paperwork herself.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 6 — PHARMACY & PRESCRIPTION RECORDS
+Riverside General Hospital Outpatient Pharmacy
+Pharmacist: Dr. Kevin Osei, PharmD  |  DEA: FO1234523  |  NPI: 7382910456
+────────────────────────────────────────────────────────────────────────────────
+
+PRESCRIPTION — RX-2024-082341
+Patient         : Sarah Elizabeth Johnson
+DOB             : July 22, 1990
+Address         : 4521 Oak Street, Austin, TX 78701
+Phone           : (512) 867-5310
+SSN (masked)    : ***-**-4321
+Insurance ID    : BCB-TX-00234567
+
+Drug            : Interferon beta-1a (Avonex)
+Dosage          : 30 mcg intramuscular injection
+Frequency       : Once weekly (Monday)
+Qty             : 4 prefilled syringes
+Refills         : 11
+Prescriber      : Dr. Michael Chen, MD — NPI 1234567890
+DEA             : BC1234523
+
+ALLERGY ALERT ON FILE: Penicillin (severe), Codeine (moderate)
+
+Dispensed by    : Dr. Kevin Osei, PharmD
+Date Dispensed  : March 22, 2024
+Co-pay Collected: $45.00
+Payment Method  : Visa card ending in 4821
+
+---
+
+PRESCRIPTION — RX-2024-082342
+Patient         : Sarah Elizabeth Johnson
+DOB             : 07/22/90
+Address         : 4521 Oak Street, Austin TX 78701
+Phone           : 5128675310
+
+Drug            : Methylprednisolone (Solu-Medrol)
+Dosage          : 1g IV daily
+Frequency       : 3-day course (March 20–22, 2024)
+Qty             : 3 vials
+Refills         : 0
+Prescriber      : Dr. Michael Chen  |  NPI: 1234567890
+
+Note: Patient verbally confirmed no changes to allergy list.
+      Patient also mentioned she had a prescription from her previous
+      provider Dr. Amanda Brooks at Austin Regional Clinic —
+      amanda.brooks@austinregional.org, (512) 454-3700.
+      Records requested under prior name Sarah E. Nguyen, DOB 07/22/1990.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 7 — INSURANCE PRIOR AUTHORIZATION CORRESPONDENCE
+────────────────────────────────────────────────────────────────────────────────
+
+From    : authportal@bcbstx.com
+To      : priorauth@riversidegeneral.org
+Subject : Prior Authorization Decision — Ref# PA-2024-TX-882341
+Date    : March 23, 2024
+
+RE: Interferon beta-1a (Avonex) — Prior Authorization APPROVED
+
+Member Name     : Sarah Elizabeth Johnson
+Member ID       : BCB-TX-00234567
+Member DOB      : 07/22/1990
+Group Number    : GRP-TX-88120
+Requesting MD   : Dr. Michael Chen, NPI 1234567890
+Diagnosis       : G35 — Multiple Sclerosis
+Auth Number     : AUTH-BCBS-2024-TX-119820
+Approval Period : March 22, 2024 through March 21, 2025
+
+This authorization is valid only for the member and diagnosis listed above.
+Any change in member information — including address, phone, or SSN — must
+be reported to Blue Cross Blue Shield of Texas at 1-800-521-2227 or via
+our provider portal at https://provider.bcbstx.com.
+
+Questions: contact Provider Relations at provider.relations@bcbstx.com
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 8 — SOCIAL WORK & CASE MANAGEMENT NOTES
+────────────────────────────────────────────────────────────────────────────────
+
+Social Worker: Jane Kim, LCSW  |  License: TX-LCSW-082341  |  Ext. 441
+Date: March 22, 2024
+
+Case Overview:
+Sarah Johnson is a 33-year-old married woman newly diagnosed with Multiple
+Sclerosis. She is a 4th grade teacher at Barton Hills Elementary (4000 Barton
+Creek Blvd, Austin TX 78735). Her husband David Johnson (DOB 08/17/1984) is
+employed at Dell Technologies, Round Rock, TX. They have one child: Lily Mae
+Johnson, age 4, DOB November 3, 2019. Lily attends Primrose School of Austin,
+(512) 448-0100.
+
+Financial Assessment:
+  - Household income: Approx. $145,000/year combined
+  - David Johnson's employer (Dell Technologies) provides secondary insurance:
+    Aetna PPO, Member ID AET-TX-00554321, Group: DELL-2024-HLTH
+  - Patient expressed concern about cost of Avonex (list price ~$6,800/month)
+  - Referred to Biogen patient assistance: 1-800-456-2255
+    (Sarah's income may qualify; provided her SSN 987-65-4321 for eligibility check)
+
+Community Resources Provided:
+  - National MS Society — Lone Star Chapter: (214) 373-1400
+  - MS Navigator: 1-800-344-4867
+  - Austin Independent School District ADA Coordinator: (512) 414-1000 ext. 890
+  - Counselling referral: Dr. Lisa Morales, PhD — (512) 477-2222
+    lmorales@austinbehavioral.org
+
+Follow-up:
+Jane Kim will follow up with patient by phone at (512) 867-5310 or email at
+sarah.e.johnson@gmail.com on March 29, 2024. Patient's mother Carol Nguyen
+((512) 334-8821) has offered to assist with childcare. Patient has signed
+ROI for mother and for husband David.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 9 — DISCHARGE SUMMARY
+Attending: Dr. Michael Chen, MD  |  NPI: 1234567890
+Discharge Date: March 22, 2024  |  Time: 4:30 PM
+────────────────────────────────────────────────────────────────────────────────
+
+PATIENT IDENTIFIERS
+  Name          : Johnson, Sarah Elizabeth
+  DOB           : 1990-07-22
+  MRN           : RGH-2024-039812
+  SSN           : 987-65-4321
+  Address       : 4521 Oak Street, Austin, TX 78701
+  Phone         : (512) 867-5310
+  Insurance     : BCBS — BCB-TX-00234567
+
+ADMITTING DIAGNOSIS  : Suspected demyelinating episode — right optic neuritis
+                       and bilateral lower extremity weakness
+DISCHARGE DIAGNOSIS  : G35 — Relapsing-Remitting Multiple Sclerosis (RRMS)
+
+HOSPITAL COURSE:
+Patient admitted March 20 for IV corticosteroid therapy. Received Methylprednisolone
+1g IV daily x 3 days (March 20, 21, 22). Responded well with partial recovery of
+lower extremity strength. MRI confirmed 4 periventricular white matter lesions.
+CSF: oligoclonal bands positive. VEPs: delayed right optic nerve conduction.
+Ophthalmology confirmed optic neuritis OD. Disease-modifying therapy initiated:
+Interferon beta-1a 30 mcg IM weekly. Patient and husband educated on administration.
+
+FOLLOW-UP APPOINTMENTS:
+  1. Dr. Michael Chen, Neurology — April 12, 2024 at 9:00 AM
+     Riverside General Hospital, 2400 Medical Center Drive, Austin TX 78701
+     michael.chen@riversidegeneral.org  |  (512) 300-1040
+
+  2. Dr. Sandra Park, Ophthalmology — April 5, 2024 at 10:00 AM
+     Riverside Eye Center, 3801 N Lamar Blvd, Austin TX 78756
+     (512) 300-2200
+
+  3. Dr. Lisa Morales, PhD — Behavioral Health — TBD
+     (512) 477-2222  |  lmorales@austinbehavioral.org
+
+  4. MS Infusion Clinic — April 20, 2024 (first injection training)
+
+DISCHARGE INSTRUCTIONS GIVEN TO: Patient and husband David Allen Johnson
+Copies faxed to: Dr. Patricia Lee — (512) 458-3901
+
+Signed: Dr. Michael Chen, MD
+        Neurology, Riverside General Hospital
+        2400 Medical Center Drive, Austin, TX 78701
+        michael.chen@riversidegeneral.org
+        Direct: (512) 300-1040  |  Pager: (512) 300-1099
+        License: TX-MD-00129834  |  NPI: 1234567890  |  DEA: BC1234523
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 10 — PATIENT PORTAL MESSAGE THREAD
+────────────────────────────────────────────────────────────────────────────────
+
+[2024-03-25, 8:02 PM] — Sarah Johnson:
+Hi Dr. Chen, I just wanted to thank you and your team for everything. I've been
+reading about interferon therapy and I have a few questions. Also — I noticed my
+portal profile still shows my old address (it shows 112 Wickersham Ln, Austin TX
+78704, which was where I lived before David and I moved in 2022). The current
+address is 4521 Oak Street, Austin TX 78701. Could someone update that?
+
+Also, my phone number was listed as (512) 867-5399 on one of the forms — the
+correct number is (512) 867-5310. My husband's cell is (512) 867-0092 if needed.
+
+— Sarah
+
+
+[2024-03-26, 9:14 AM] — Dr. Michael Chen:
+Sarah,
+
+Thank you for flagging those. I've asked our admin team (records@riversidegeneral.org
+or direct line (512) 300-1010) to correct your address and phone in the system.
+For reference your MRN is RGH-2024-039812 if you need to quote it.
+
+Regarding your questions about Avonex — happy to discuss at your April 12
+appointment. In the meantime the MS nurse navigator Rachel Torres
+(r.torres@riversidegeneral.org, (512) 300-1055) is an excellent resource.
+
+Hang in there.
+— Dr. Chen
+
+
+[2024-03-28, 6:45 PM] — Sarah Johnson:
+Dr. Chen,
+
+One more thing — I got a call today from someone who said they were from Blue Cross
+and asked for my full SSN to "verify my coverage." I gave them the last four digits
+(4321) but got suspicious and hung up before giving the full number. I just wanted
+to document that in case it's relevant. Should I call the number on my insurance
+card instead? My member ID is BCB-TX-00234567 if that helps.
+
+I'm also going to call the MS Society tomorrow — the number you gave me was
+1-800-344-4867 right?
+
+Thanks,
+Sarah (DOB 07/22/1990)
+
+
+[2024-03-28, 7:30 PM] — Dr. Michael Chen:
+Sarah,
+
+Good instinct. Never give out your full SSN over the phone unless YOU initiated the
+call. Contact BCBS directly at 1-800-521-2227. Your account is under Member ID
+BCB-TX-00234567 and your group number is GRP-TX-88120.
+
+And yes — 1-800-344-4867 is the MS Navigator line.
+
+— Dr. Chen
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 11 — ADDITIONAL ASSOCIATED PATIENT RECORDS (same episode of care)
+────────────────────────────────────────────────────────────────────────────────
+
+The following records were cross-referenced during Ms. Johnson's admission.
+
+11A — PRIOR RECORD: Austin Regional Clinic
+Patient filed under maiden name: Sarah Elizabeth Nguyen
+DOB: 07/22/1990  |  SSN: 987-65-4321  |  MRN-ARC: ARC-2017-004821
+PCP at that time: Dr. Amanda Brooks, MD
+            amanda.brooks@austinregional.org  |  (512) 454-3700
+Address on file: 112 Wickersham Ln, Austin TX 78704 (prior address)
+
+Note: Records requested and received. No neurological history prior to 2024.
+Hypothyroidism first documented 2018 under married name Sarah Johnson.
+
+
+11B — MINOR PATIENT (associated family record):
+Patient's daughter is registered separately:
+  Name          : Lily Mae Johnson
+  DOB           : November 3, 2019
+  MRN           : RGH-2022-011204
+  Guarantor     : Sarah Elizabeth Johnson (mother) — SSN 987-65-4321
+  Guarantor DOB : 07/22/1990
+  Ins. ID       : BCB-TX-00234567 (covered as dependent under mother's policy)
+  Pediatrician  : Dr. Emily Torres, MD  |  NPI: 8899001122
+                  emily.torres@austinkidspeds.com  |  (512) 448-7900
+
+
+11C — HUSBAND'S RECORD (authorized representative):
+  Name          : David Allen Johnson
+  DOB           : August 17, 1984
+  SSN           : 876-54-3210
+  Phone         : (512) 867-0092
+  Email         : david.johnson84@gmail.com
+  Employer      : Dell Technologies, One Dell Way, Round Rock TX 78682
+  Insurance     : Aetna PPO (secondary) — AET-TX-00554321
+  Relationship  : Authorized representative per HIPAA form signed 03/21/2024
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 12 — EDGE CASE: PHONE NUMBER FORMAT VARIATIONS (from intake system)
+             Different staff entered the same contact number in different ways
+────────────────────────────────────────────────────────────────────────────────
+
+The following all refer to Sarah Johnson's mobile number, entered variably
+across different intake forms and system imports:
+
+  Form A (paper intake, scanned)  : (512) 867-5310
+  Form B (nurse station entry)    : 512-867-5310
+  Form C (portal auto-import)     : 5128675310
+  Form D (fax cover from insurer) : +1 (512) 867-5310
+  Form E (old record, legacy sys) : 512.867.5310
+  Form F (Dr. Lee referral fax)   : +15128675310
+  Form G (pharmacy Rx label)      : 512/867-5310
+  Emergency card (husband David)  : (512) 867-0092
+
+All confirmed to belong to the same patient. Merged under MRN RGH-2024-039812.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 13 — EDGE CASE: DATE OF BIRTH FORMAT VARIATIONS (same patient)
+────────────────────────────────────────────────────────────────────────────────
+
+The following DOB entries for Sarah Johnson were found across source systems:
+
+  Intake form            : July 22, 1990
+  Insurance portal       : 07/22/1990
+  Discharge summary      : 1990-07-22
+  Legacy ARC record      : 22-Jul-90
+  Pharmacy Rx label      : 07/22/90
+  Specialist referral    : Jul 22 1990
+  Nurse note (informal)  : born 7/22/90
+  Newborn record Lily    : Mother DOB: **/**/1990  (year only, privacy-masked)
+
+All confirmed to refer to the same individual under SSN 987-65-4321.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 14 — EDGE CASE: PII EMBEDDED IN CLINICAL NARRATIVE TEXT
+────────────────────────────────────────────────────────────────────────────────
+
+Excerpt from dictated consultation note (Dr. Chen, March 21 2024):
+
+"Patient Sarah Johnson, SSN ending in 4321, was counselled today regarding her
+confirmed MS diagnosis. Her husband David (cell: 512-867-0092) was present and
+expressed that he works remotely from their home at 4521 Oak Street, Austin 78701.
+The patient mentioned she has a sister, Rebecca Nguyen, who can be reached at
+rebecca.nguyen.atx@gmail.com or (512) 990-1122, though she is not listed as an
+authorized contact at this time. Patient's insurance auth number AUTH-BCBS-2024-TX-119820
+was confirmed verbally. She will follow up at our clinic — contact michael.chen@
+riversidegeneral.org or dial (512) 300-1040 for scheduling."
+
+Note: The above quote preserves the original dictation. The email address was
+split across a line break in the original transcript:
+  michael.chen@
+  riversidegeneral.org
+Both lines together form the complete address michael.chen@riversidegeneral.org.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SECTION 15 — EDGE CASE: PARTIAL, MASKED, AND INDIRECT PII
+────────────────────────────────────────────────────────────────────────────────
+
+The following represent how PII appeared in partially disclosed or masked forms
+across various documents in this episode of care:
+
+  "patient's SSN on file"                         — SSN referenced but not stated
+  "member ending in ***4321"                       — last 4 of SSN
+  "***-**-4321"                                    — partially masked SSN
+  "card ending in ****4821"                        — last 4 of credit card
+  "DOB on file matches"                            — DOB referenced but not stated
+  "**/**/1990"                                     — year-only DOB
+  "born in 1990"                                   — year only
+  "the patient's address on Barton Creek Blvd"     — indirect address reference
+  "her school, Barton Hills Elementary"            — indirect employer reference
+  "her husband's employer in Round Rock"           — indirect employer reference
+  "the Johnson residence"                          — indirect address
+  "the physician whose NPI ends in ...7890"        — partial NPI
+  "Dr. C., our attending neurologist"              — anonymised but identifiable
+  "a 33-year-old teacher in Austin"                — quasi-identifier combination
+  "Patient with initials S.E.J., DOB 07/22/90"    — initials + DOB combination
+
+
+────────────────────────────────────────────────────────────────────────────────
+END OF RECORD — Riverside General Hospital
+Document generated: March 28, 2024
+Generated by: Clinical Records System v4.2
+System IP: 192.168.10.45
+Session User: jflores@riversidegeneral.org (Janet Flores, Admin)
+Record access logged under audit trail ID: AUD-RGH-2024-039812-0328
+================================================================================

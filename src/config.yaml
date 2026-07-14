@@ -1,0 +1,281 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# PII Anonymizer Lambda Configuration
+
+# Processing configuration
+processing:
+  # Approach to use for PII detection:
+  # - "text" - Use text-based processing (extract text and send to standard LLM)
+  # - "image" - Use image-based processing (convert to images and use vision LLM)
+  # - "word" - Use Word document processing (direct text manipulation via python-docx)
+  # - "excel" - Use Excel processing (direct cell manipulation via openpyxl)
+  approach: "image"
+
+  # Whether to process embedded images in PDFs
+  process_embedded_images: true
+
+  # Supported file extensions per approach (auto-detected if approach not specified)
+  # PDF files (.pdf) → "text" or "image" approach
+  # Word files (.docx) → "word" approach
+  # Excel files (.xlsx) → "excel" approach
+  # Text files (.txt) → "text" approach
+  # Image files (.jpg, .jpeg, .png, .tiff, .tif, .bmp, .webp) → "image" approach
+
+# Model configuration
+model:
+  # ID of the Bedrock model used for detection and synthetic generation.
+  #
+  # Anthropic Claude (Converse API, text + vision, all regions):
+  #   global.anthropic.claude-sonnet-4-6        (recommended default)
+  #   us.anthropic.claude-opus-4-8              (highest quality)
+  #   us.anthropic.claude-haiku-4-5-20251001-v1:0  (fastest/cheapest)
+  # Amazon Nova (Converse API, text + vision):
+  #   us.amazon.nova-pro-v1:0
+  #   us.amazon.nova-lite-v1:0
+  # OpenAI GPT-5.x (bedrock-mantle Responses API, US regions only, see notes):
+  #   openai.gpt-5.4   (us-east-2, us-west-2, us-gov-west-1)
+  #   openai.gpt-5.5   (us-east-2 only)
+  #
+  # NOTE on OpenAI models:
+  #   - Served via the bedrock-mantle Responses API, not Converse.
+  #   - Reasoning models: temperature/top_k are ignored; use reasoning_effort below.
+  #   - US regions only. If the stack runs elsewhere, the request cross-regions to
+  #     a US region (PII data movement) — avoid for EU/residency-restricted data.
+  id: "global.anthropic.claude-sonnet-4-6"
+
+  # Provider of the model: "anthropic", "amazon", or "openai"
+  provider: "anthropic"
+
+  # Per-model inference capabilities — how each model's request must be shaped.
+  # Key = substring of the model id, matched most-specific first. This OVERRIDES
+  # / EXTENDS the built-in defaults in model_router.py. Adding a new model is
+  # just a new entry here (no code change). Fields:
+  #   sampling: does it accept temperature/top_p/top_k? (false for GPT-5.x, Opus 4.7/4.8)
+  #   thinking: "enabled_budget" | "adaptive_effort" | "reasoning_effort" | null
+  #   efforts:  valid effort values (effort/reasoning models)
+  #   max_output_tokens: output cap (clamps detection/synthetic max_tokens + chunk size)
+  # VERIFIED against Bedrock (tests/probe_reasoning_efforts.py + Opus probe).
+  capabilities:
+    "opus-4-8":
+      {
+        sampling: false,
+        thinking: "adaptive_effort",
+        efforts: [low, medium, high, xhigh],
+        max_output_tokens: 64000,
+      }
+    "opus-4-7":
+      {
+        sampling: false,
+        thinking: "adaptive_effort",
+        efforts: [low, medium, high, xhigh],
+        max_output_tokens: 64000,
+      }
+    "openai.gpt-5":
+      { sampling: false, thinking: "reasoning_effort", efforts: [none, low] }
+    "nova": { sampling: true, thinking: null, max_output_tokens: 10000 }
+    "anthropic":
+      { sampling: true, thinking: "enabled_budget", max_output_tokens: 64000 }
+
+# ============================================================
+# Step 1: PII Detection
+# ============================================================
+detection:
+  # Temperature (low = deterministic). Ignored by OpenAI reasoning models.
+  temperature: 0
+  # Top K (low = deterministic). Ignored by OpenAI reasoning models.
+  top_k: 5
+  # Reasoning effort for OpenAI GPT-5.x models only: none | low | medium | high | xhigh.
+  # Ignored by Claude/Nova. 'none' = fastest/cheapest (no reasoning). GPT-5.4/5.5
+  # reject 'minimal'. The UI only offers values the selected model supports.
+  reasoning_effort: "none"
+  # Max output tokens for text-based detection (txt, csv, json, docx, xlsx)
+  max_tokens: 64000
+  # Max output tokens for image-based detection (pdf image, tiff, png, etc.)
+  image_max_tokens: 16000
+  # Enable extended thinking for detection. CLAUDE (Anthropic) MODELS ONLY —
+  # ignored by Nova and OpenAI (OpenAI uses reasoning_effort above). Increases
+  # latency/cost; can help accuracy on complex documents.
+  enable_thinking: false
+  thinking_budget_tokens: 4000
+
+# ============================================================
+# Step 2: Synthetic PII Generation
+# ============================================================
+synthetic:
+  # Temperature (high = creative/diverse). Ignored by OpenAI reasoning models.
+  temperature: 0.8
+  # Top K (high = diverse token choices). Ignored by OpenAI reasoning models.
+  top_k: 200
+  # Reasoning effort for OpenAI GPT-5.x models only: none | low | medium | high | xhigh.
+  # Ignored by Claude/Nova. 'none' is recommended for synthetic (a creative step
+  # that needs little reasoning) — fastest/cheapest.
+  reasoning_effort: "none"
+  # Max output tokens
+  max_tokens: 64000
+  # Enable extended thinking for synthetic generation. CLAUDE (Anthropic) MODELS
+  # ONLY — ignored by Nova and OpenAI.
+  enable_thinking: false
+  thinking_budget_tokens: 4000
+
+output:
+  # Whether to store results in S3
+  store_in_s3: true
+
+  # Whether to store PII mappings in DynamoDB
+  store_in_dynamodb: true
+
+  # Prefix for output files in S3
+  # PDF text-based → redacted/text/
+  # PDF image-based → redacted/image/
+  # Word files → redacted/word/
+  # Excel files → redacted/excel/
+  output_prefix: "redacted/"
+
+  # Whether to organize output files by processing approach (text/, image/)
+  organize_by_approach: true
+
+# Concurrency configuration
+concurrency:
+  # Max concurrent threads for per-page/sheet PII detection
+  max_workers: 6
+  # Characters per token estimate for chunking
+  chars_per_token: 4
+  # Max tokens per chunk before splitting (for TXT files)
+  max_txt_chunk_tokens: 20000
+  # Max tokens per batch for synthetic generation (Step 2)
+  max_synthetic_batch_tokens: 10000
+
+# Redaction configuration
+redaction:
+  # Redaction mode:
+  # - "synthetic" - Replace PII with synthetic data (default)
+  # - "blackout" - Cover PII with solid black rectangles / [REDACTED] text
+  mode: "synthetic"
+
+  # Markers — visual indicators on redacted content (only with synthetic mode)
+  markers:
+    text: true # txt, json — wraps synthetic with ***value***
+    tabular: true # csv, xlsx — yellow cell background highlight
+    word: true # docx — yellow text highlight
+    image: false # images — bounding box overlay
+
+# Validation configuration
+validation:
+  # Maximum file sizes (in MB)
+  max_file_size_mb:
+    pdf: 50
+    image: 100
+    word: 50
+    excel: 50
+    txt: 10
+
+  # Maximum page/sheet counts
+  max_pages:
+    pdf: 1000
+    image: 50 # For multi-page TIFF
+
+  max_sheets:
+    excel: 100
+
+  # Image dimension limits (pixels)
+  image_min_dimension: 10
+  image_max_dimension: 10000
+
+  # Bounding box overlay (colored border around redacted areas, for review/audit)
+  # is controlled by redaction.markers.image — the "Bounding boxes (PDF, images)"
+  # UI toggle — which governs BOTH PDF and image output.
+
+  # Bounding box border color when the overlay is on (RGB 0-1)
+  bounding_box_color: [0.8, 0.2, 0.2] # Soft red
+
+# Audio processing configuration
+audio:
+  # Redaction mode for audio: "synthetic" (Polly speech) or "silence" (mute PII segments)
+  redaction_mode: "synthetic"
+  # Amazon Polly voice for synthesizing PII replacements
+  polly_voice: "Joanna"
+  # Sample rate for output audio (Hz)
+  sample_rate: "16000"
+  # Language code for Amazon Transcribe
+  language_code: "en-US"
+
+# Performance configuration
+performance:
+  # DPI for image extraction (higher values mean better quality but slower processing)
+  dpi: 300
+
+  # Maximum number of retry attempts for AWS API calls
+  max_retries: 3
+
+  # Timeout in seconds for AWS API calls
+  timeout_seconds: 300
+
+# Clustering configuration for synthetic PII generation
+# Maps LLM entity type labels to value categories for grouping.
+# Add keywords here to handle new PII types without code changes.
+clustering:
+  type_hint_map:
+    address:
+      - address
+      - street
+      - city
+      - state
+      - zip
+      - location
+    person_name:
+      - name
+      - first_name
+      - last_name
+      - patient_name
+      - person
+      - borrower
+      - policy_holder
+      - attorney
+    phone:
+      - phone
+      - fax
+      - telephone
+    ssn:
+      - ssn
+      - social
+    date:
+      - dob
+      - birth
+      - expiration_date
+    org_name:
+      - institution
+      - hospital
+      - clinic
+      - organization
+      - company
+      - bank
+      - institution_name
+      - employer
+      - court
+    id_generic:
+      - id
+      - record
+      - account
+      - policy
+      - reference
+      - case
+      - npi
+      - license
+      - passport
+      - vin
+      - credit_card
+      - ein
+      - employer_id
+      - pan
+      - iban
+      - swift
+      - national_id
+      - resident_id
+      - tax_id
+      - docket
+      - license_plate
+      - credit_score
+      - score
+  # Max items per cluster (prevents snowball merging)
+  max_cluster_size: 10

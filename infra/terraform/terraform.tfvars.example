@@ -1,0 +1,66 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Copy this file to terraform.tfvars and update with your values.
+# Empty strings ("") mean the feature is disabled or uses AWS defaults.
+
+# =============================================================================
+# REQUIRED
+# =============================================================================
+aws_region                = "us-east-2"
+function_name             = "PII-Anonymizer"
+s3_input_bucket_name      = "your-input-bucket-name"
+s3_output_bucket_name     = "your-output-bucket-name"
+s3_artifact_bucket_name   = "your-artifact-bucket-name"
+processing_mode           = "realtime"    # "realtime" (S3→SQS) or "batch" (EventBridge→SQS)
+
+# =============================================================================
+# PROCESSING
+# =============================================================================
+memory_size              = 2048
+timeout                  = 600
+reserved_concurrency     = 25
+max_concurrent_workflows = 25
+sqs_visibility_timeout   = 90
+log_level                = "INFO"
+log_retention_days       = 30
+
+# =============================================================================
+# BATCH MODE ONLY (ignored in realtime)
+# =============================================================================
+s3_filter_prefix       = ""
+batch_trigger_schedule = 5       # minutes between scans
+job_folder_depth       = 1       # 1=top folder, 2=subfolder, 3=sub-subfolder
+folder_wait_seconds    = 30
+
+# =============================================================================
+# KMS KEYS (leave empty for AWS-managed encryption)
+# =============================================================================
+s3_input_kms_key_arn          = ""
+s3_output_kms_key_arn         = ""
+dynamodb_kms_key_arn          = ""
+cloudwatch_kms_key_arn        = ""
+sqs_kms_key_arn               = ""
+idempotency_table_kms_key_arn = ""
+
+# =============================================================================
+# EXISTING RESOURCES (leave empty to create new)
+# =============================================================================
+dynamodb_table_name             = ""
+existing_dynamodb_table_arn     = ""
+existing_dynamodb_table_name    = ""
+existing_idempotency_table_arn  = ""
+existing_idempotency_table_name = ""
+
+# =============================================================================
+# SECURITY (leave empty if not required)
+# =============================================================================
+permissions_boundary_arn = ""
+vpc_subnet_ids           = []
+vpc_security_group_ids   = []
+
+# =============================================================================
+# TAGS
+# =============================================================================
+environment = "DEV"
+project     = "PII-Anonymizer"

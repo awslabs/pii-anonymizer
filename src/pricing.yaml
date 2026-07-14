@@ -1,0 +1,87 @@
+# Bedrock model pricing (per token in USD)
+# Source: https://aws.amazon.com/bedrock/pricing/ (verify for your region)
+# Prices are estimates — confirm in the Bedrock console before relying on cost figures.
+# Only current models (Claude 4.5+, Nova, OpenAI GPT-5.x) are listed; older models removed.
+pricing:
+  # ---------------------------------------------------------------------------
+  # Anthropic Claude (Converse API)
+  # ---------------------------------------------------------------------------
+  - name: bedrock/global.anthropic.claude-sonnet-4-6
+    units:
+      - name: inputTokens
+        price: "3.0E-6"
+      - name: outputTokens
+        price: "1.5E-5"
+  - name: bedrock/us.anthropic.claude-sonnet-4-6
+    units:
+      - name: inputTokens
+        price: "3.3E-6"
+      - name: outputTokens
+        price: "1.65E-5"
+  - name: bedrock/global.anthropic.claude-sonnet-4-5-20250929-v1:0
+    units:
+      - name: inputTokens
+        price: "3.0E-6"
+      - name: outputTokens
+        price: "1.5E-5"
+  - name: bedrock/us.anthropic.claude-opus-4-8
+    units:
+      - name: inputTokens
+        price: "5.0E-6"
+      - name: outputTokens
+        price: "2.5E-5"
+  - name: bedrock/us.anthropic.claude-opus-4-7
+    units:
+      - name: inputTokens
+        price: "5.0E-6"
+      - name: outputTokens
+        price: "2.5E-5"
+  - name: bedrock/us.anthropic.claude-opus-4-5-20251101-v1:0
+    units:
+      - name: inputTokens
+        price: "5.0E-6"
+      - name: outputTokens
+        price: "2.5E-5"
+  - name: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+    units:
+      - name: inputTokens
+        price: "1.1E-6"
+      - name: outputTokens
+        price: "5.5E-6"
+  - name: bedrock/global.anthropic.claude-haiku-4-5-20251001-v1:0
+    units:
+      - name: inputTokens
+        price: "1.0E-6"
+      - name: outputTokens
+        price: "5.0E-6"
+  # ---------------------------------------------------------------------------
+  # Amazon Nova (Converse API)
+  # ---------------------------------------------------------------------------
+  - name: bedrock/us.amazon.nova-pro-v1:0
+    units:
+      - name: inputTokens
+        price: "8.0E-7"
+      - name: outputTokens
+        price: "3.2E-6"
+  - name: bedrock/us.amazon.nova-lite-v1:0
+    units:
+      - name: inputTokens
+        price: "6.0E-8"
+      - name: outputTokens
+        price: "2.4E-7"
+  # ---------------------------------------------------------------------------
+  # OpenAI GPT-5.x (bedrock-mantle Responses API)
+  # Pricing matches OpenAI first-party rates on Bedrock.
+  # ---------------------------------------------------------------------------
+  - name: bedrock/openai.gpt-5.4
+    units:
+      - name: inputTokens
+        price: "2.75E-6"
+      - name: outputTokens
+        price: "1.65E-5"
+  - name: bedrock/openai.gpt-5.5
+    units:
+      - name: inputTokens
+        price: "5.5E-6"
+      - name: outputTokens
+        price: "3.3E-5"

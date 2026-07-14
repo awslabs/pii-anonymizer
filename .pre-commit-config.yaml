@@ -1,0 +1,180 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+repos:
+  # ============================================================================
+  # GENERAL CODE QUALITY & FORMATTING
+  # ============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=102400"] # 100MB = 102400KB
+      - id: check-json
+        exclude: '(package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$|cdk\.context\.json$|\.vscode/|\.idea/|\.terraform/)'
+      - id: check-yaml
+        exclude: 'infra/cfn/template\.yaml'
+      - id: debug-statements
+      - id: detect-private-key
+        exclude: '(\.terraform/|node_modules/|\.venv/|venv/|\.virtualenv/|vendor/|Pods/)'
+      - id: end-of-file-fixer
+        exclude: '(\.min\.(js|css)$|\.bundle\.(js|css)$|package-lock\.json$|yarn\.lock$|\.terraform\.lock\.hcl$|.*\.pyc$|.*\.pyo$)'
+      - id: name-tests-test
+      - id: no-commit-to-branch
+        args: ["--branch", "main", "--branch", "master"]
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+        exclude: '(\.min\.(js|css)$|\.bundle\.(js|css)$|package-lock\.json$|yarn\.lock$|\.terraform\.lock\.hcl$)'
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        verbose: true
+
+  # ============================================================================
+  # LANGUAGE-SPECIFIC: PYTHON
+  # ============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.14
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: '\.py$'
+      - id: ruff-format
+        files: '\.py$'
+
+  - repo: https://github.com/psf/black
+    rev: 26.1.0
+    hooks:
+      - id: black
+        files: '\.py$'
+        exclude: '(\.venv/|venv/|\.virtualenv/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.tox/|.*\.pyc$|.*\.pyo$)'
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.4.2
+    hooks:
+      - id: python-safety-dependencies-check
+        files: requirements.*\.txt$
+        exclude: pyproject\.toml
+
+  # ============================================================================
+  # LANGUAGE-SPECIFIC: GO
+  # ============================================================================
+  - repo: https://github.com/TekWizely/pre-commit-golang
+    rev: v1.0.0-rc.4
+    hooks:
+      - id: go-fmt
+        args: [-w]
+        files: '\.go$'
+      - id: go-vet
+        args: [-v]
+        files: '\.go$'
+      - id: go-imports
+        args: [-w]
+        files: '\.go$'
+      - id: go-mod-tidy
+        files: 'go\.(mod|sum)$'
+
+  # ============================================================================
+  # LANGUAGE-SPECIFIC: JAVASCRIPT/TYPESCRIPT
+  # ============================================================================
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v10.0.0-rc.2
+    hooks:
+      - id: eslint
+        args:
+          [
+            --fix,
+            --no-eslintrc,
+            --config,
+            .devsecops/eslintrc.json,
+            --ignore-path,
+            .devsecops/eslintignore,
+          ]
+        files: '\.(js|jsx|ts|tsx|mjs|cjs)$'
+        exclude: '(node_modules/|dist/|build/|\.next/|\.nuxt/|\.svelte-kit/|\.turbo/|coverage/|\.cache/|\.ash/|static/|\.min\.js$|\.bundle\.js$)'
+        additional_dependencies:
+          - eslint@8.57.1
+          - eslint-plugin-security@3.0.1
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        args: [--no-cache]
+        files: '\.(js|jsx|ts|tsx|json|css|md|yaml|yml)$'
+        exclude: '(node_modules/|dist/|build/|\.next/|\.nuxt/|\.svelte-kit/|\.turbo/|coverage/|\.min\.(js|css)$|\.bundle\.(js|css)$|package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$|cdk\.context\.json$)'
+
+  # ============================================================================
+  # LANGUAGE-SPECIFIC: JAVA
+  # ============================================================================
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.16.0
+    hooks:
+      - id: pretty-format-java
+        args: [--autofix]
+        files: '\.java$'
+
+  # ============================================================================
+  # INFRASTRUCTURE AS CODE: TERRAFORM
+  # ============================================================================
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.105.0
+    hooks:
+      - id: terraform_fmt
+        files: '\.tf$'
+      - id: terraform_tflint
+        files: '\.tf$'
+        verbose: true
+        args:
+          - --args=--format=compact --force
+
+  # ============================================================================
+  # SECURITY SCANNING
+  # ============================================================================
+  - repo: https://github.com/awslabs/automated-security-helper
+    rev: v3.1.7
+    hooks:
+      - id: ash-simple-scan
+
+  - repo: https://github.com/awslabs/ferret-scan
+    rev: v1.4.0
+    hooks:
+      - id: ferret-scan
+        name: Ferret Scan Security Check
+        args:
+          [
+            "--pre-commit-mode",
+            "--confidence",
+            "medium,high",
+            "--checks",
+            "EMAIL,INTELLECTUAL_PROPERTY,IP_ADDRESS,SECRETS,SOCIAL_MEDIA",
+            "--config",
+            ".devsecops/ferret-scan.yaml",
+          ]
+        files: '\.(go|java|json|md|py|sh|sql|txt|xml|yaml|yml)$'
+        # Note: .js files temporarily removed from files pending performance fix
+        exclude: '(^\.git/|\.ash/|\.cache/|\.devsecops/|\.dsr/|\.idea/|\.kiro/|\.venv/|\.virtualenv/|__pycache__/|\.pytest_cache/|\.mypy_cache/|\.ruff_cache/|\.tox/|\.terraform/|\.next/|\.nuxt/|\.svelte-kit/|\.turbo/|\.docusaurus/|_build/|site/|bin/|cdk\.out/|dist/|node_modules/|\.pnpm-store/|\.yarn/|bower_components/|\.vscode/|out/|\.output/|\.nyc_output/|test-results/|reports/|tmp/|temp/|logs/|setup\.sh|vendor/|Pods/|venv/|test_|_test\.|^README\.md$|\.DS_Store$|Thumbs\.db$|.*\.pyc$|.*\.pyo$|.*\.swp$|.*\.swo$|.*\.log$|package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$|poetry\.lock$|Pipfile\.lock$|Gemfile\.lock$|\.terraform\.lock\.hcl$|terraform\.tfstate$|cdk\.context\.json$)'
+        pass_filenames: true
+
+  # ============================================================================
+  # INFRASTRUCTURE SECURITY
+  # ============================================================================
+  - repo: https://github.com/aws-cloudformation/cfn-lint
+    rev: v1.43.4
+    hooks:
+      - id: cfn-lint
+        exclude: ^\.*
+
+  # ============================================================================
+  # LICENSE COMPLIANCE
+  # ============================================================================
+  - repo: https://github.com/FHPythonUtils/LicenseCheck
+    rev: "2025.1.0"
+    hooks:
+      - id: licensecheck
+        name: License Compliance Check
+        args: ["--format", "ansi", "--zero"]
+        # Note: licensecheck will automatically detect pyproject.toml or requirements.txt
+        # Configure allowed/blocked licenses in licensecheck.toml

@@ -1,0 +1,26 @@
+# Lambda layer builder for PII Anonymizer
+# Builds python/ folder with all dependencies for Amazon Linux 2023 x86_64
+#
+# Usage:
+#   docker build -f Dockerfile.layer -t pii-layer-builder .
+#   docker run --rm -v $(pwd)/layers/lambda_layer:/output pii-layer-builder
+
+FROM public.ecr.aws/sam/build-python3.13:latest
+
+COPY requirements_lambda.txt /tmp/requirements_lambda.txt
+
+RUN pip install \
+    --no-cache-dir \
+    --target /tmp/python \
+    --only-binary=:all: \
+    --platform manylinux2014_x86_64 \
+    --implementation cp \
+    --python-version 3.13 \
+    -r /tmp/requirements_lambda.txt
+
+# Clean up
+RUN find /tmp/python -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    find /tmp/python -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true && \
+    find /tmp/python -name "*.pyc" -delete 2>/dev/null || true
+
+CMD ["sh", "-c", "mkdir -p /output/python && cp -r /tmp/python/* /output/python/"]

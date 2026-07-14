@@ -1,0 +1,141 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Git config
+.gitattributes
+
+# Virtual environments
+venv/
+venv-*/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.lock.hcl
+terraform.tfvars
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+crash.log
+crash.*.log
+
+# AWS
+*.pem
+*.key
+.aws/
+credentials
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# Archives
+# *.zip  # Commented out to allow Lambda layer zip
+*.tar.gz
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test outputs
+test_output/
+test-data-output/
+temp/
+tmp/
+data/output/
+tests/
+
+# Test result files (generated during development)
+*_TEST_*.md
+*_HANDLING.md
+TEST_PLAN.md
+test_*.py
+
+# Sample data outputs (generated)
+sample-data/output/
+
+# Backup/fixed source files (temporary)
+src/*_fixed.py
+
+# Lambda layers
+layers/lambda_layer/python/
+layers/lambda_layer/*.zip
+layers/ffmpeg_layer/bin/
+
+# Deployment artifacts
+.aws-sam/
+modules/lambda_function/*.pyc
+
+# DevSecOps - Generated files (safe to ignore)
+ferret-sast-report.json
+.ash/
+.ash.yaml
+.ash.yml
+.eslintcache
+
+# DevSecOps - Tool cache directories
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Threat modeling files
+.threatmodel/
+treatmodel.md
+my_model.json
+ThreatModelMCPinstall.sh
+
+# CI/CD configuration files
+# Track ONLY the public ruff lint workflow; keep everything else in .github/ ignored.
+.github/*
+!.github/workflows/
+.github/workflows/*
+!.github/workflows/python-lint.yml
+.gitlab-ci.yml
+.devsecops/
+licensecheck.toml
+
+# Kiro configuration
+.kiro/
+
+# CFN parameters with real values (for dev use only)
+infra/cfn/parameters.json
+infra/cfn/samconfig.toml
+
+# Node modules (pre-commit prettier cache)
+node_modules/
+
+# Lambda function + layer zips (Terraform archive_file build artifacts, regenerated on deploy)
+infra/terraform/modules/lambda_function.zip
+infra/terraform/modules/pii_anonymizer_layer.zip
+infra/terraform/modules/ffmpeg_layer.zip

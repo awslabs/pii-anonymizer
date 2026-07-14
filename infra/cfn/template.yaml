@@ -1,0 +1,1130 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: PII Anonymization & Redaction System (SAM)
+
+Globals:
+  Function:
+    Runtime: python3.13
+    MemorySize: !Ref MemorySize
+    Timeout: !Ref Timeout
+    Tracing: Active
+    Layers:
+      - !Ref PiiAnonymizerLayer
+    Environment:
+      Variables:
+        LOG_LEVEL: !Ref LogLevel
+    Tags:
+      Environment: !Ref Environment
+      Project: !Ref Project
+
+Parameters:
+  FunctionName:
+    Type: String
+    Default: PII-Anonymizer
+    AllowedPattern: "^[a-zA-Z0-9-]+$"
+  MemorySize:
+    Type: Number
+    Default: 2048
+    MinValue: 512
+    MaxValue: 10240
+  Timeout:
+    Type: Number
+    Default: 600
+    MinValue: 30
+    MaxValue: 900
+  ReservedConcurrency:
+    Type: Number
+    Default: 10
+    MinValue: 1
+  LogLevel:
+    Type: String
+    Default: INFO
+    AllowedValues: [DEBUG, INFO, WARNING, ERROR]
+  S3InputBucketName:
+    Type: String
+    Description: Existing S3 bucket for input documents
+  S3OutputBucketName:
+    Type: String
+    Description: Existing S3 bucket for redacted output
+  ArtifactBucket:
+    Type: String
+    Description: Existing S3 bucket for deployment artifacts and config
+  S3FilterPrefix:
+    Type: String
+    Default: ""
+  DynamoDBTableName:
+    Type: String
+    Default: MappingRegistry
+  ExistingDynamoDBTableArn:
+    Type: String
+    Default: ""
+  ExistingDynamoDBTableName:
+    Type: String
+    Default: ""
+  S3InputKmsKeyArn:
+    Type: String
+    Default: ""
+  S3OutputKmsKeyArn:
+    Type: String
+    Default: ""
+  DynamoDBKmsKeyArn:
+    Type: String
+    Default: ""
+  CloudWatchKmsKeyArn:
+    Type: String
+    Default: ""
+  SQSKmsKeyArn:
+    Type: String
+    Default: ""
+  IdempotencyTableKmsKeyArn:
+    Type: String
+    Default: ""
+  PermissionsBoundaryArn:
+    Type: String
+    Default: ""
+  ProcessingMode:
+    Type: String
+    Default: "realtime"
+    AllowedValues: ["realtime", "batch"]
+  LogRetentionDays:
+    Type: Number
+    Default: 365
+    AllowedValues:
+      [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1096,
+        1827,
+        2192,
+        2557,
+        2922,
+        3288,
+        3653,
+      ]
+  SQSVisibilityTimeout:
+    Type: Number
+    Default: 90
+  ExistingIdempotencyTableArn:
+    Type: String
+    Default: ""
+  ExistingIdempotencyTableName:
+    Type: String
+    Default: ""
+  MaxConcurrentWorkflows:
+    Type: Number
+    Default: 10
+  FolderWaitSeconds:
+    Type: Number
+    Default: 30
+  BatchTriggerSchedule:
+    Type: Number
+    Default: 5
+  JobFolderDepth:
+    Type: Number
+    Default: 1
+    Description: "Folder depth for job grouping (1=top folder, 2=subfolder, 3=sub-subfolder)"
+  Environment:
+    Type: String
+    Default: QA
+  Project:
+    Type: String
+    Default: PII-Anonymizer
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Comma-separated subnet IDs for Lambda VPC config (leave empty for no VPC)
+  VpcSecurityGroupIds:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Comma-separated security group IDs for Lambda VPC config (leave empty for no VPC)
+
+Conditions:
+  HasPermissionsBoundary: !Not [!Equals [!Ref PermissionsBoundaryArn, ""]]
+  HasS3InputKms: !Not [!Equals [!Ref S3InputKmsKeyArn, ""]]
+  HasS3OutputKms: !Not [!Equals [!Ref S3OutputKmsKeyArn, ""]]
+  HasDynamoDBKms: !Not [!Equals [!Ref DynamoDBKmsKeyArn, ""]]
+  HasCloudWatchKms: !Not [!Equals [!Ref CloudWatchKmsKeyArn, ""]]
+  HasSQSKms: !Not [!Equals [!Ref SQSKmsKeyArn, ""]]
+  CreateDynamoDBTable: !Equals [!Ref ExistingDynamoDBTableArn, ""]
+  CreateIdempotencyTable: !Equals [!Ref ExistingIdempotencyTableArn, ""]
+  HasIdempotencyTableKms: !Not [!Equals [!Ref IdempotencyTableKmsKeyArn, ""]]
+  RealtimeMode: !Equals [!Ref ProcessingMode, "realtime"]
+  BatchTriggerEnabled: !Equals [!Ref ProcessingMode, "batch"]
+  HasVpc: !Not [!Equals [!Join ["", !Ref VpcSubnetIds], ""]]
+
+Resources:
+  # ===========================================================
+  # Lambda Layer
+  # ===========================================================
+  PiiAnonymizerLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub ${FunctionName}-layer
+      ContentUri: ../../layers/lambda_layer/
+      CompatibleRuntimes:
+        - python3.13
+  # ffmpeg layer (audio redaction — attached to Redact Lambda only).
+  # Provides the static ffmpeg binary at /opt/bin/ffmpeg.
+  FfmpegLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub ${FunctionName}-ffmpeg
+      ContentUri: ../../layers/ffmpeg_layer/
+      CompatibleRuntimes:
+        - python3.13
+  # ===========================================================
+  # DynamoDB — Mapping Registry (conditional)
+  # ===========================================================
+  PiiTransformationsTable:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDBTable
+    Properties:
+      TableName: !Sub ${FunctionName}-${DynamoDBTableName}
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: filename
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: filename
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification: !If
+        - HasDynamoDBKms
+        - SSEEnabled: true
+          SSEType: KMS
+          KMSMasterKeyId: !Ref DynamoDBKmsKeyArn
+        - !Ref "AWS::NoValue"
+      TimeToLiveSpecification:
+        AttributeName: expiration_time
+        Enabled: true
+
+  # ===========================================================
+  # DynamoDB — Idempotency / Concurrency Table (conditional)
+  # ===========================================================
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateIdempotencyTable
+    Properties:
+      TableName: !Sub ${FunctionName}-IdempotencyTable
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: doc_key
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: doc_key
+          AttributeType: S
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification: !If
+        - HasIdempotencyTableKms
+        - SSEEnabled: true
+          SSEType: KMS
+          KMSMasterKeyId: !Ref IdempotencyTableKmsKeyArn
+        - !Ref "AWS::NoValue"
+      TimeToLiveSpecification:
+        AttributeName: expiration_time
+        Enabled: true
+
+  # ===========================================================
+  # SQS
+  # ===========================================================
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${FunctionName}-dlq
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !If [HasSQSKms, !Ref SQSKmsKeyArn, !Ref "AWS::NoValue"]
+      SqsManagedSseEnabled: !If [HasSQSKms, false, true]
+
+  PiiQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${FunctionName}-queue
+      VisibilityTimeout: !Ref SQSVisibilityTimeout
+      MessageRetentionPeriod: 86400
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 1000
+      KmsMasterKeyId: !If [HasSQSKms, !Ref SQSKmsKeyArn, !Ref "AWS::NoValue"]
+      SqsManagedSseEnabled: !If [HasSQSKms, false, true]
+
+  SQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Condition: RealtimeMode
+    Properties:
+      Queues: [!Ref PiiQueue]
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt PiiQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub arn:aws:s3:::${S3InputBucketName}
+
+  DLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${FunctionName}-dlq-alarm
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DeadLetterQueue.QueueName
+
+  # ===========================================================
+  # CloudWatch Log Groups (configurable retention, CKV_AWS_338)
+  # ===========================================================
+  RouterLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-router
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  DetectionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-detection
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  SyntheticLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-synthetic
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  RedactLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-redact
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  WorkflowTrackerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-workflow-tracker
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  BatchTriggerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: BatchTriggerEnabled
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-batch-trigger
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+  S3NotifLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: RealtimeMode
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FunctionName}-s3-notif
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+
+  # ===========================================================
+  # Router Lambda (SQS → Step Functions)
+  # ===========================================================
+  RouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionName}-router
+      CodeUri: ../../src/
+      Handler: handlers.router_handler.lambda_handler
+      Timeout: 60
+      MemorySize: 256
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PiiQueue.Arn
+            BatchSize: 1
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+            ScalingConfig:
+              MaximumConcurrency: !Ref ReservedConcurrency
+      Environment:
+        Variables:
+          STATE_MACHINE_ARN: !GetAtt PIIProcessingStateMachine.Arn
+          CONCURRENCY_TABLE: !If
+            - CreateIdempotencyTable
+            - !Ref IdempotencyTable
+            - !Ref ExistingIdempotencyTableName
+          S3_OUTPUT_BUCKET_NAME: !Ref S3OutputBucketName
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+          MAX_CONCURRENT: !Ref MaxConcurrentWorkflows
+          FOLDER_WAIT_SECONDS: !Ref FolderWaitSeconds
+          CONFIG_BUCKET: !Ref ArtifactBucket
+          CONFIG_KEY: config/config.yaml
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: states:StartExecution
+              Resource: !GetAtt PIIProcessingStateMachine.Arn
+        - Statement:
+            - Effect: Allow
+              Action: s3:ListBucket
+              Resource: !Sub arn:aws:s3:::${S3InputBucketName}
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
+        - Statement:
+            - Effect: Allow
+              Action: [dynamodb:UpdateItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateIdempotencyTable
+                - !GetAtt IdempotencyTable.Arn
+                - !Ref ExistingIdempotencyTableArn
+        - Statement:
+            - Effect: Allow
+              Action:
+                [
+                  dynamodb:UpdateItem,
+                  dynamodb:GetItem,
+                  dynamodb:PutItem,
+                  dynamodb:DescribeTable,
+                ]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasSQSKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref SQSKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasIdempotencyTableKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref IdempotencyTableKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # Detection Lambda (Step 1 — SF Map per file)
+  # ===========================================================
+  DetectionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionName}-detection
+      CodeUri: ../../src/
+      Handler: handlers.pii_detection_handler.lambda_handler
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Environment:
+        Variables:
+          S3_INPUT_BUCKET_NAME: !Ref S3InputBucketName
+          S3_OUTPUT_BUCKET_NAME: !Ref S3OutputBucketName
+          CONFIG_BUCKET: !Ref ArtifactBucket
+          CONFIG_KEY: config/config.yaml
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource:
+                - !Sub arn:aws:s3:::${S3InputBucketName}/*
+                - !Sub arn:aws:s3:::${ArtifactBucket}/*
+        - Statement:
+            - Effect: Allow
+              Action: s3:PutObject
+              Resource: !Sub arn:aws:s3:::${S3OutputBucketName}/*
+        - Statement:
+            - Effect: Allow
+              Action: [bedrock:Converse, bedrock:InvokeModel]
+              Resource:
+                - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/*
+                - !Sub arn:aws:bedrock:*::foundation-model/*
+        # cfn-nag:W12 Textract does not support resource-level permissions
+        - Statement:
+            - Effect: Allow
+              Action: textract:DetectDocumentText
+              Resource: "*"
+        # Audio detection — Amazon Transcribe (scoped to the pii-audio-* job prefix).
+        # Transcribe reads media via the existing s3:GetObject on the input bucket
+        # and uses service-managed output, so no extra S3 perms are needed.
+        - Statement:
+            - Effect: Allow
+              Action:
+                [
+                  transcribe:StartTranscriptionJob,
+                  transcribe:GetTranscriptionJob,
+                ]
+              Resource: !Sub arn:aws:transcribe:${AWS::Region}:${AWS::AccountId}:transcription-job/pii-audio-*
+        # OpenAI GPT-5.x via the bedrock-mantle Responses API (only used when an
+        # openai.* model is selected). Verify the action if OpenAI calls are denied.
+        - Statement:
+            - Effect: Allow
+              Action: bedrock-mantle:CreateInference
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action: [dynamodb:UpdateItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasS3InputKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref S3InputKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasS3OutputKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref S3OutputKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # Synthetic Lambda (Step 2 — single invocation, 15 min max)
+  # ===========================================================
+  SyntheticFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionName}-synthetic
+      CodeUri: ../../src/
+      Handler: handlers.synthetic_handler.lambda_handler
+      Timeout: 900
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Environment:
+        Variables:
+          S3_OUTPUT_BUCKET_NAME: !Ref S3OutputBucketName
+          CONFIG_BUCKET: !Ref ArtifactBucket
+          CONFIG_KEY: config/config.yaml
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource:
+                - !Sub arn:aws:s3:::${S3OutputBucketName}/*
+                - !Sub arn:aws:s3:::${ArtifactBucket}/*
+        - Statement:
+            - Effect: Allow
+              Action: s3:PutObject
+              Resource: !Sub arn:aws:s3:::${S3OutputBucketName}/*
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource:
+                - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/*
+                - !Sub arn:aws:bedrock:*::foundation-model/*
+        # OpenAI GPT-5.x via the bedrock-mantle Responses API (synthetic generation
+        # when an openai.* model is selected). Verify the action if calls are denied.
+        - Statement:
+            - Effect: Allow
+              Action: bedrock-mantle:CreateInference
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasS3OutputKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref S3OutputKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # Redact Lambda (Step 3 — SF Map per file)
+  # ===========================================================
+  RedactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionName}-redact
+      CodeUri: ../../src/
+      Handler: handlers.redact_handler.lambda_handler
+      # Redact needs ffmpeg for audio splicing — overrides the global layer list
+      Layers:
+        # PiiAnonymizerLayer is added to every function via Globals.Function.Layers.
+        # Only add the ffmpeg layer here (redact does the audio splice). Re-listing
+        # the pii layer would duplicate it → "two versions of the same layer" error.
+        - !Ref FfmpegLayer
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Environment:
+        Variables:
+          S3_INPUT_BUCKET_NAME: !Ref S3InputBucketName
+          S3_OUTPUT_BUCKET_NAME: !Ref S3OutputBucketName
+          CONFIG_BUCKET: !Ref ArtifactBucket
+          CONFIG_KEY: config/config.yaml
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource:
+                - !Sub arn:aws:s3:::${S3InputBucketName}/*
+                - !Sub arn:aws:s3:::${S3OutputBucketName}/*
+                - !Sub arn:aws:s3:::${ArtifactBucket}/*
+        - Statement:
+            - Effect: Allow
+              Action: s3:PutObject
+              Resource: !Sub arn:aws:s3:::${S3OutputBucketName}/*
+        # cfn-nag:W12 Textract does not support resource-level permissions
+        - Statement:
+            - Effect: Allow
+              Action: textract:DetectDocumentText
+              Resource: "*"
+        # Audio redaction — Amazon Polly. SynthesizeSpeech does not support
+        # resource-level permissions, so Resource must be "*" (AWS limitation).
+        - Statement:
+            - Effect: Allow
+              Action: polly:SynthesizeSpeech
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action: [dynamodb:UpdateItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasS3InputKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref S3InputKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasS3OutputKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref S3OutputKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # Step Functions — CloudWatch Log Group
+  # ===========================================================
+  SFNLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/states/${FunctionName}-pipeline
+      RetentionInDays: !Ref LogRetentionDays
+      KmsKeyId:
+        !If [HasCloudWatchKms, !Ref CloudWatchKmsKeyArn, !Ref "AWS::NoValue"]
+
+  # ===========================================================
+  # Step Functions — State Machine
+  # ===========================================================
+  PIIProcessingStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: !Sub ${FunctionName}-pipeline
+      DefinitionUri: ../statemachine/pii_processing.asl.json
+      DefinitionSubstitutions:
+        PIIDetectionFunctionArn: !GetAtt DetectionFunction.Arn
+        SyntheticFunctionArn: !GetAtt SyntheticFunction.Arn
+        RedactFunctionArn: !GetAtt RedactFunction.Arn
+        DynamoDBTableName: !If
+          - CreateDynamoDBTable
+          - !Ref PiiTransformationsTable
+          - !Ref ExistingDynamoDBTableName
+      Logging:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt SFNLogGroup.Arn
+        IncludeExecutionData: false
+        Level: ERROR
+      Tracing:
+        Enabled: true
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource:
+                - !GetAtt DetectionFunction.Arn
+                - !GetAtt SyntheticFunction.Arn
+                - !GetAtt RedactFunction.Arn
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:UpdateItem
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:Encrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogDelivery
+                - logs:GetLogDelivery
+                - logs:UpdateLogDelivery
+                - logs:DeleteLogDelivery
+                - logs:ListLogDeliveries
+                - logs:PutResourcePolicy
+                - logs:DescribeResourcePolicies
+                - logs:DescribeLogGroups
+              Resource: "*"
+      Tags:
+        Environment: !Ref Environment
+        Project: !Ref Project
+
+  # ===========================================================
+  # Workflow Tracker (EventBridge SF completion → decrement)
+  # ===========================================================
+  WorkflowTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionName}-workflow-tracker
+      CodeUri: ../../src/
+      Handler: handlers.workflow_tracker_handler.lambda_handler
+      Timeout: 60
+      MemorySize: 256
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Events:
+        SFCompletion:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source: [aws.states]
+              detail-type: ["Step Functions Execution Status Change"]
+              detail:
+                stateMachineArn: [!Ref PIIProcessingStateMachine]
+                status: [SUCCEEDED, FAILED, TIMED_OUT, ABORTED]
+            RetryPolicy:
+              MaximumRetryAttempts: 3
+      Environment:
+        Variables:
+          CONCURRENCY_TABLE: !If
+            - CreateIdempotencyTable
+            - !Ref IdempotencyTable
+            - !Ref ExistingIdempotencyTableName
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: [dynamodb:UpdateItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateIdempotencyTable
+                - !GetAtt IdempotencyTable.Arn
+                - !Ref ExistingIdempotencyTableArn
+        - Statement:
+            - Effect: Allow
+              Action: states:DescribeExecution
+              Resource: !Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:execution:${FunctionName}-pipeline:*
+        - Statement:
+            - Effect: Allow
+              Action:
+                [dynamodb:UpdateItem, dynamodb:GetItem, dynamodb:DescribeTable]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasIdempotencyTableKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref IdempotencyTableKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasDynamoDBKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref DynamoDBKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # Batch Trigger Lambda (conditional — batch mode only)
+  # ===========================================================
+  BatchTriggerFunction:
+    Type: AWS::Serverless::Function
+    Condition: BatchTriggerEnabled
+    Properties:
+      FunctionName: !Sub ${FunctionName}-batch-trigger
+      CodeUri: ../../src/
+      Handler: handlers.batch_trigger_handler.handler
+      Timeout: 900
+      MemorySize: 256
+      VpcConfig: !If
+        - HasVpc
+        - SubnetIds: !Ref VpcSubnetIds
+          SecurityGroupIds: !Ref VpcSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: !Sub "rate(${BatchTriggerSchedule} minutes)"
+            Enabled: true
+      Environment:
+        Variables:
+          S3_INPUT_BUCKET_NAME: !Ref S3InputBucketName
+          S3_OUTPUT_BUCKET_NAME: !Ref S3OutputBucketName
+          SQS_QUEUE_URL: !Ref PiiQueue
+          SCAN_PREFIX: !Ref S3FilterPrefix
+          JOB_FOLDER_DEPTH: !Ref JobFolderDepth
+          DYNAMODB_TABLE_NAME: !If
+            - CreateDynamoDBTable
+            - !Ref PiiTransformationsTable
+            - !Ref ExistingDynamoDBTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: s3:ListBucket
+              Resource:
+                - !Sub arn:aws:s3:::${S3InputBucketName}
+                - !Sub arn:aws:s3:::${S3OutputBucketName}
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub arn:aws:s3:::${S3OutputBucketName}/*
+        - Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: !GetAtt PiiQueue.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                [
+                  dynamodb:GetItem,
+                  dynamodb:Query,
+                  dynamodb:PutItem,
+                  dynamodb:UpdateItem,
+                ]
+              Resource: !If
+                - CreateDynamoDBTable
+                - !GetAtt PiiTransformationsTable.Arn
+                - !Ref ExistingDynamoDBTableArn
+        - !If
+          - HasSQSKms
+          - Statement:
+              - Effect: Allow
+                Action: [kms:Decrypt, kms:GenerateDataKey]
+                Resource: !Ref SQSKmsKeyArn
+          - !Ref "AWS::NoValue"
+        - !If
+          - HasVpc
+          - Statement:
+              - Effect: Allow
+                Action: [ec2:CreateNetworkInterface, ec2:DeleteNetworkInterface]
+                Resource: !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action: ec2:DescribeNetworkInterfaces
+                Resource: "*"
+          - !Ref "AWS::NoValue"
+
+  # ===========================================================
+  # S3 Notification — Custom Resource (realtime mode only)
+  # NOTE: Requires s3:PutBucketNotificationConfiguration.
+  # If blocked by SCP, configure S3 notifications manually.
+  # ===========================================================
+  S3NotificationHandlerRole:
+    Type: AWS::IAM::Role
+    Condition: RealtimeMode
+    Properties:
+      RoleName: !Sub ${FunctionName}-s3-notif-role
+      PermissionsBoundary:
+        !If [
+          HasPermissionsBoundary,
+          !Ref PermissionsBoundaryArn,
+          !Ref "AWS::NoValue",
+        ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${FunctionName}-s3-notif-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  [logs:CreateLogGroup, logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${FunctionName}-s3-notif:*
+              - Effect: Allow
+                Action: [s3:GetBucketNotification, s3:PutBucketNotification]
+                Resource: !Sub arn:aws:s3:::${S3InputBucketName}
+
+  S3NotificationHandler:
+    Type: AWS::Lambda::Function
+    Condition: RealtimeMode
+    DependsOn: S3NotificationHandlerRole
+    Properties:
+      FunctionName: !Sub ${FunctionName}-s3-notif
+      Runtime: python3.13
+      Handler: index.handler
+      Timeout: 60
+      MemorySize: 128
+      Role: !GetAtt S3NotificationHandlerRole.Arn
+      Code:
+        ZipFile: |
+          import boto3, json, urllib.request, time
+          s3 = boto3.client('s3')
+          SUFFIXES = ['.pdf','.docx','.xlsx','.csv','.json','.txt','.jpg','.jpeg','.png','.tiff','.tif','.bmp','.webp','.mp3','.wav']
+          def send(event, context, status, data={}):
+              body = json.dumps({'Status': status, 'Reason': str(data.get('Error','')), 'PhysicalResourceId': event.get('PhysicalResourceId', context.log_stream_name), 'StackId': event['StackId'], 'RequestId': event['RequestId'], 'LogicalResourceId': event['LogicalResourceId'], 'Data': data}).encode()
+              urllib.request.urlopen(urllib.request.Request(event['ResponseURL'], data=body, headers={'Content-Type':''}, method='PUT'))
+          def handler(event, context):
+              try:
+                  props = event['ResourceProperties']
+                  bucket = props['Bucket']
+                  if event['RequestType'] == 'Delete':
+                      s3.put_bucket_notification_configuration(Bucket=bucket, NotificationConfiguration={})
+                      return send(event, context, 'SUCCESS')
+                  target_arn, prefix = props['TargetArn'], props.get('FilterPrefix', '')
+                  configs = []
+                  for suffix in SUFFIXES:
+                      rules = [{'Name':'suffix','Value':suffix}]
+                      if prefix: rules.append({'Name':'prefix','Value':prefix})
+                      configs.append({'QueueArn':target_arn,'Events':['s3:ObjectCreated:*'],'Filter':{'Key':{'FilterRules':rules}}})
+                  for attempt in range(3):
+                      try:
+                          s3.put_bucket_notification_configuration(Bucket=bucket, NotificationConfiguration={'QueueConfigurations':configs})
+                          break
+                      except Exception:
+                          if attempt == 2: raise
+                          time.sleep(5)
+                  send(event, context, 'SUCCESS')
+              except Exception as e:
+                  print(f'Error: {e}')
+                  send(event, context, 'FAILED', {'Error':str(e)})
+
+  S3BucketNotification:
+    Type: Custom::S3BucketNotification
+    Condition: RealtimeMode
+    DependsOn: [S3NotificationHandler, SQSQueuePolicy]
+    Properties:
+      ServiceToken: !GetAtt S3NotificationHandler.Arn
+      Bucket: !Ref S3InputBucketName
+      TargetArn: !GetAtt PiiQueue.Arn
+      FilterPrefix: !Ref S3FilterPrefix
+
+# =============================================================
+# Outputs
+# =============================================================
+Outputs:
+  StateMachineArn:
+    Description: ARN of the Step Functions pipeline
+    Value: !Ref PIIProcessingStateMachine
+  DynamoDBTableName:
+    Description: Mapping registry table name
+    Value: !If
+      - CreateDynamoDBTable
+      - !Ref PiiTransformationsTable
+      - !Ref ExistingDynamoDBTableName
+  SQSQueueUrl:
+    Value: !Ref PiiQueue
+  SQSQueueArn:
+    Value: !GetAtt PiiQueue.Arn
+  DLQUrl:
+    Value: !Ref DeadLetterQueue
+  IdempotencyTableName:
+    Value: !If
+      - CreateIdempotencyTable
+      - !Ref IdempotencyTable
+      - !Ref ExistingIdempotencyTableName
+  S3InputBucketName:
+    Value: !Ref S3InputBucketName
+  S3OutputBucketName:
+    Value: !Ref S3OutputBucketName
+  AWSRegion:
+    Value: !Ref AWS::Region

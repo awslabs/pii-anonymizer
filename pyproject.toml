@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pii-anonymizer"
+version = "0.1.0"
+description = "PII Anonymization & Redaction System using AWS Bedrock and Textract"
+requires-python = ">=3.10,<3.14"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+dependencies = [
+    "boto3>=1.35.0",
+    "aws-xray-sdk>=2.14.0",
+    "pypdfium2>=4.30.0",
+    "pypdf>=5.1.0",
+    "pillow>=12.1.1",  # CVE-2026-25990 fix
+    "python-docx>=0.8.11",
+    "openpyxl>=3.0.10",
+    "faker>=30.0.0",
+    "fuzzywuzzy>=0.18.0",
+    "python-Levenshtein>=0.26.0",
+    "defusedxml>=0.7.1",
+    "PyYAML>=6.0",
+    "termcolor>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.1.0",
+    "matplotlib>=3.9.0",
+    "ipykernel>=6.29.0",
+]
+
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.8.0",
+    "pre-commit>=3.5.0",
+]
+
+# For text processing
+text = [
+    "sentence-transformers>=3.3.0",
+]
+
+# All dependencies
+all = [
+    "pii-anonymizer[dev,test,text,frontend]",
+]
+
+frontend = [
+    "streamlit>=1.38.0",
+    "python-dotenv>=1.0.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pyyaml>=6.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+exclude = ["tests*", "build*", "dist*", "*.egg-info"]
+
+[tool.setuptools.package-data]
+src = ["*.yaml", "*.yml"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E402", "E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.uv]
+# Workaround for 'Failed to read from zip file' issue on build.amazon.com
+concurrent-downloads = 1
