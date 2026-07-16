@@ -141,7 +141,7 @@ See [Processing Modes](docs/processing-modes.md) for the full comparison, folder
 ## Project Structure
 
 ```
-pii_anonymizer/
+pii-anonymizer/
 ├── src/                            # Lambda + core processing code
 │   ├── config.yaml                 # Model and processing config
 │   ├── pricing.yaml                # Bedrock pricing for cost estimation
@@ -271,7 +271,7 @@ pii_anonymizer/
 ```bash
 # Clone the repo (replace the URL with this repository's Git URL)
 git clone https://github.com/<your-org>/pii-anonymizer.git
-cd pii_anonymizer
+cd pii-anonymizer
 
 # Create your S3 buckets (if they don't exist)
 aws s3 mb s3://my-pii-input --region us-east-2
