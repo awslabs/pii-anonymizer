@@ -11,4 +11,4 @@
 
 # Contributors
 
-_Contributions are welcome. Contributors will be recognized here in future releases._
+- Yiyue Qian
