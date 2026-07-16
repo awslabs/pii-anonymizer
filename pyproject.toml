@@ -40,14 +40,9 @@ test = [
     "pre-commit>=3.5.0",
 ]
 
-# For text processing
-text = [
-    "sentence-transformers>=3.3.0",
-]
-
 # All dependencies
 all = [
-    "pii-anonymizer[dev,test,text,frontend]",
+    "pii-anonymizer[dev,test,frontend]",
 ]
 
 frontend = [
