@@ -1,5 +1,6 @@
 # PII Anonymization & Redaction System
 
+Questions? [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/awslabs/pii-anonymizer)
 ---
 
 ## DISCLAIMER
@@ -141,7 +142,7 @@ See [Processing Modes](docs/processing-modes.md) for the full comparison, folder
 ## Project Structure
 
 ```
-pii-anonymizer/
+pii_anonymizer/
 ├── src/                            # Lambda + core processing code
 │   ├── config.yaml                 # Model and processing config
 │   ├── pricing.yaml                # Bedrock pricing for cost estimation
@@ -271,7 +272,7 @@ pii-anonymizer/
 ```bash
 # Clone the repo (replace the URL with this repository's Git URL)
 git clone https://github.com/<your-org>/pii-anonymizer.git
-cd pii-anonymizer
+cd pii_anonymizer
 
 # Create your S3 buckets (if they don't exist)
 aws s3 mb s3://my-pii-input --region us-east-2
