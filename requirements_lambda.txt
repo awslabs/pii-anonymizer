@@ -19,7 +19,7 @@ faker>=18.0.0           # Generate synthetic PII
 # Text Processing
 fuzzywuzzy>=0.18.0      # Fuzzy string matching
 openpyxl>=3.0.10        # Excel spreadsheet manipulation
-Pillow==12.1.1          # Image processing (PIL/Pillow) - CVE-2026-25990 fix
+Pillow==12.3.0          # Image processing (PIL/Pillow) - CVE-2026-25990 fix
 # PDF Processing
 pypdfium2>=4.30.0       # PDF rendering (PDFium engine; Apache-2.0/BSD) - page rasterization
 pypdf>=5.1.0           # PDF text extraction, validation, and assembly
