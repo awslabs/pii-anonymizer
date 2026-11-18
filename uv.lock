@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10, <3.14"
 resolution-markers = [
     "python_full_version >= '3.12' and sys_platform == 'win32'",
@@ -2334,7 +2334,7 @@ requires-dist = [
     { name = "openpyxl", specifier = ">=3.0.10" },
     { name = "pandas", marker = "extra == 'frontend'", specifier = ">=2.0.0" },
     { name = "pii-anonymizer", extras = ["dev", "test", "frontend"], marker = "extra == 'all'" },
-    { name = "pillow", specifier = ">=12.1.1" },
+    { name = "pillow", specifier = ">=12.3.0" },
     { name = "pre-commit", marker = "extra == 'test'", specifier = ">=3.5.0" },
     { name = "pypdf", specifier = ">=6.19.0" },
     { name = "pypdfium2", specifier = ">=4.30.0" },
